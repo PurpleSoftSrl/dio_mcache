@@ -2,9 +2,11 @@
 
 > Hyper-configurable HTTP cache interceptor for Dio. Built on `mcache_dart`.
 
-[![pub.dev](https://img.shields.io/badge/pub.dev-dio__cache__interceptor-blue)](https://pub.dev/packages/dio_mcache)
+[![pub.dev](https://img.shields.io/pub/v/dio_mcache?label=pub.dev&logo=dart&color=0175C2)](https://pub.dev/packages/dio_mcache)
 [![CI](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/ci.yml)
 [![Publish](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/publish.yml/badge.svg)](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/publish.yml)
+[![Stars](https://img.shields.io/github/stars/PurpleSoftSrl/dio_mcache?color=yellow)](https://github.com/PurpleSoftSrl/dio_mcache/stargazers)
+[![License](https://img.shields.io/badge/license-AGPL%20v3%20%7C%20Commercial-blue)](LICENSE)
 [![tests](https://img.shields.io/badge/tests-34%20passed-brightgreen)](https://github.com/PurpleSoftSrl/dio_mcache/actions)
 [![license](https://img.shields.io/badge/license-AGPL%20v3%20%7C%20Commercial-blue)](LICENSE)
 
