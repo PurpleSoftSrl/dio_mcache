@@ -1,11 +1,11 @@
-# dio_cache_interceptor
+# dio_mcache
 
 > Hyper-configurable HTTP cache interceptor for Dio. Built on `mcache_dart`.
 
-[![pub.dev](https://img.shields.io/badge/pub.dev-dio__cache__interceptor-blue)](https://pub.dev/packages/dio_cache_interceptor)
-[![CI](https://github.com/PurpleSoftSrl/dio_cache_interceptor/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/PurpleSoftSrl/dio_cache_interceptor/actions/workflows/ci.yml)
-[![Publish](https://github.com/PurpleSoftSrl/dio_cache_interceptor/actions/workflows/publish.yml/badge.svg)](https://github.com/PurpleSoftSrl/dio_cache_interceptor/actions/workflows/publish.yml)
-[![tests](https://img.shields.io/badge/tests-34%20passed-brightgreen)](https://github.com/PurpleSoftSrl/dio_cache_interceptor/actions)
+[![pub.dev](https://img.shields.io/badge/pub.dev-dio__cache__interceptor-blue)](https://pub.dev/packages/dio_mcache)
+[![CI](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/ci.yml)
+[![Publish](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/publish.yml/badge.svg)](https://github.com/PurpleSoftSrl/dio_mcache/actions/workflows/publish.yml)
+[![tests](https://img.shields.io/badge/tests-34%20passed-brightgreen)](https://github.com/PurpleSoftSrl/dio_mcache/actions)
 [![license](https://img.shields.io/badge/license-AGPL%20v3%20%7C%20Commercial-blue)](LICENSE)
 
 Every caching decision — TTL, key strategy, serialization, dedup, invalidation,
@@ -16,12 +16,12 @@ conditional fetch — is controllable globally and per-request.
 ## Install
 
 ```bash
-dart pub add dio_cache_interceptor
+dart pub add dio_mcache
 ```
 
 ```yaml
 dependencies:
-  dio_cache_interceptor: ^0.1.0
+  dio_mcache: ^0.1.0
 ```
 
 ---
@@ -29,7 +29,7 @@ dependencies:
 ## Quick start
 
 ```dart
-import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_mcache/dio_mcache.dart';
 
 final dio = Dio()..interceptors.add(DioCacheInterceptor(
   options: DioCacheOptions(expiration: const Duration(minutes: 5)),

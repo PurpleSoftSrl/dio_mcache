@@ -1,6 +1,6 @@
-library dio_cache_interceptor;
+library dio_mcache;
 
-export 'src/dio_cache_interceptor.dart'
+export 'src/dio_mcache.dart'
     show
         CacheControl,
         CachePolicy,

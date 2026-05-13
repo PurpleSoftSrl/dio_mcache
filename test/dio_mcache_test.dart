@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_mcache/dio_mcache.dart';
 import 'package:mcache_dart/mcache_dart.dart';
 import 'package:test/test.dart';
 
