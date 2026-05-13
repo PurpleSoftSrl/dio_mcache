@@ -6,7 +6,6 @@ description: >-
   stale-while-revalidate, and full control over every caching
   behavior at global and per-request level.
 version: 0.1.0
-publish_to: none
 repository: https://github.com/PurpleSoftSrl/dio_cache_interceptor
 topics:
   - dio
