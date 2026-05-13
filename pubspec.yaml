@@ -12,7 +12,6 @@ topics:
   - cache
   - caching
   - http
-  - interceptor
   - flutter
 
 environment:
