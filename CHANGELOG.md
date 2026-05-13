@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Align README badges with mcache_dart standard (dynamic pub.dev, CI, Publish, Stars, License)
+
 ## 0.1.2
 
 - Rename package to dio_mcache for pub.dev uniqueness
