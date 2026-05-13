@@ -1,0 +1,30 @@
+name: dio_cache_interceptor
+description: >-
+  Hyper-configurable HTTP cache interceptor for Dio. Built on
+  mcache_dart. Per-request cache policies, tag-based invalidation,
+  request deduplication, conditional requests, custom serialization,
+  stale-while-revalidate, and full control over every caching
+  behavior at global and per-request level.
+version: 0.1.0
+publish_to: none
+repository: https://github.com/PurpleSoftSrl/dio_cache_interceptor
+topics:
+  - dio
+  - cache
+  - caching
+  - http
+  - interceptor
+  - flutter
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  dio: ^5.7.0
+  mcache_dart:
+    path: ../mcache
+    version: ^0.1.0
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
