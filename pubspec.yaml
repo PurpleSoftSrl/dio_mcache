@@ -21,9 +21,7 @@ environment:
 
 dependencies:
   dio: ^5.7.0
-  mcache_dart:
-    path: ../mcache
-    version: ^0.1.0
+  mcache_dart: ^0.1.5
 
 dev_dependencies:
   lints: ^4.0.0
