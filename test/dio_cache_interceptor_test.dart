@@ -1,4 +1,5 @@
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:mcache_dart/mcache_dart.dart';
 import 'package:test/test.dart';
 
 void main() {
