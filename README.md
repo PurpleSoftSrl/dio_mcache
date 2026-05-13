@@ -8,7 +8,6 @@
 [![Stars](https://img.shields.io/github/stars/PurpleSoftSrl/dio_mcache?color=yellow)](https://github.com/PurpleSoftSrl/dio_mcache/stargazers)
 [![License](https://img.shields.io/badge/license-AGPL%20v3%20%7C%20Commercial-blue)](LICENSE)
 [![tests](https://img.shields.io/badge/tests-34%20passed-brightgreen)](https://github.com/PurpleSoftSrl/dio_mcache/actions)
-[![license](https://img.shields.io/badge/license-AGPL%20v3%20%7C%20Commercial-blue)](LICENSE)
 
 Every caching decision — TTL, key strategy, serialization, dedup, invalidation,
 conditional fetch — is controllable globally and per-request.
