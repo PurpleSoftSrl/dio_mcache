@@ -1,3 +1,10 @@
+## 0.1.4
+
+- Add dartdoc documentation to all public API (20%+ coverage)
+- Shorten pubspec description for pub.dev scoring
+- Add example/ directory with usage sample
+- Bump mcache_dart dependency to ^0.1.9
+
 ## 0.1.3
 
 - Align README badges with mcache_dart standard (dynamic pub.dev, CI, Publish, Stars, License)

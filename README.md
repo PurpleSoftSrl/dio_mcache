@@ -22,7 +22,7 @@ dart pub add dio_mcache
 
 ```yaml
 dependencies:
-  dio_mcache: ^0.1.3
+  dio_mcache: ^0.1.4
 ```
 
 ---

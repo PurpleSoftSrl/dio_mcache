@@ -2,23 +2,48 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:mcache_dart/mcache_dart.dart';
 
-// ── Enums ──────────────────────────────────────────────────
+/// Per-request cache behaviour control.
 
+/// Use [normal] for standard cache read/write, [forceRefresh] to always
+/// go to network, [onlyCache] for offline-only, [noCache] to skip reading
+/// from cache, and [noStore] to skip both reading and writing.
 enum CacheControl {
-  normal,        // use cache if available, store response
-  forceRefresh,  // skip cache, force network, store response
-  onlyCache,     // return only from cache, fail if miss
-  noCache,       // skip cache entirely, store response
-  noStore,       // skip cache entirely, do NOT store response
+  /// Use cache if available, store response.
+  normal,
+
+  /// Skip cache, force network, store response.
+  forceRefresh,
+
+  /// Return only from cache; fail if miss.
+  onlyCache,
+
+  /// Skip cache read, store response.
+  noCache,
+
+  /// Skip cache read and do NOT store response.
+  noStore,
 }
 
 // ── Core types ─────────────────────────────────────────────
 
+/// A cached HTTP response stored by [DioCacheInterceptor].
+
+/// Holds the response [data], [statusCode], [headers], [cachedAt]
+/// timestamp, and optional [tags] for tag-based invalidation.
 class CachedResponse {
+  /// The response body data.
   final dynamic data;
+
+  /// The HTTP status code of the cached response.
   final int statusCode;
+
+  /// The response headers.
   final Map<String, List<String>> headers;
+
+  /// When this response was cached.
   final DateTime cachedAt;
+
+  /// Tags for tag-based invalidation.
   final List<String> tags;
 
   CachedResponse({
@@ -30,22 +55,60 @@ class CachedResponse {
   }) : cachedAt = cachedAt ?? DateTime.now();
 }
 
+/// Function that builds a unique cache key from [RequestOptions].
+
+/// Return a [String] that uniquely identifies the request for caching.
+
 typedef CacheKeyBuilder = String Function(RequestOptions options);
+
+/// Predicate that returns `true` if the [Response] should be stored in cache.
+
 typedef ShouldCacheResponse = bool Function(Response response);
+
+/// Predicate that returns `true` if the [RequestOptions] should be served from cache.
+
 typedef ShouldCacheRequest = bool Function(RequestOptions options);
+
+/// Function that serializes response data before storing it in cache.
+
+/// Use this to strip reactive wrappers or encode complex objects.
 typedef SerializeCache = dynamic Function(dynamic data);
+
+/// Function that deserializes cached data before returning it.
+
+/// Use this to reconstruct reactive wrappers or decode complex objects.
 typedef DeserializeCache = dynamic Function(dynamic data);
 
 // ── Cache policy ───────────────────────────────────────────
 
+/// Per-request cache policy configuration.
+
+/// Controls expiration, sliding expiration, stale-while-revalidate,
+/// priority, max response size, and tags for individual requests.
+/// Can be merged with global [DioCacheOptions] via [merge].
 class CachePolicy {
+  /// Absolute expiration duration from time of caching.
   final Duration? expiration;
+
+  /// Sliding expiration duration; resets on every cache hit.
   final Duration? slidingExpiration;
+
+  /// Stale-while-revalidate window; serve stale cache while refreshing in background.
   final Duration? staleWhileRevalidate;
+
+  /// Eviction priority for this cached entry.
   final CacheItemPriority? priority;
+
+  /// Maximum response size in bytes to cache.
   final int? maxResponseSize;
+
+  /// Force caching for this request (override method whitelist).
   final bool? cacheRequest;
+
+  /// Force caching the response (override global predicate).
   final bool? cacheResponse;
+
+  /// Tags for tag-based invalidation.
   final List<String> tags;
   final SerializeCache? serialize;
   final DeserializeCache? deserialize;
@@ -63,6 +126,7 @@ class CachePolicy {
     this.deserialize,
   });
 
+  /// Merges this policy with [other], preferring [other]'s non-null values.
   CachePolicy merge(CachePolicy other) => CachePolicy(
     expiration: other.expiration ?? expiration,
     slidingExpiration: other.slidingExpiration ?? slidingExpiration,
@@ -79,18 +143,44 @@ class CachePolicy {
 
 // ── Main options ───────────────────────────────────────────
 
+/// Global cache options for [DioCacheInterceptor].
+
+/// Configures default expiration, method whitelist, deduplication,
+/// auto-invalidation on mutations, named policies, and custom key builders.
 class DioCacheOptions {
+  /// Default absolute expiration for cached responses.
   final Duration? expiration;
+
+  /// Default sliding expiration for cached responses.
   final Duration? slidingExpiration;
+
+  /// Default stale-while-revalidate duration.
   final Duration? staleWhileRevalidate;
+
+  /// Default eviction priority.
   final CacheItemPriority priority;
+
+  /// Maximum response size in bytes to cache.
   final int? maxResponseSize;
+  /// Custom key builder; defaults to method:URL?query.
   final CacheKeyBuilder? keyBuilder;
+
+  /// Predicate to decide whether to cache a response.
   final ShouldCacheResponse? shouldCacheResponse;
+
+  /// Predicate to decide whether to serve from cache.
   final ShouldCacheRequest? shouldCacheRequest;
+
+  /// HTTP methods that are cacheable (default: {'GET'}).
   final Set<String> cacheMethods;
+
+  /// Auto-invalidate related GET cache entries on mutation requests.
   final bool autoInvalidateOnMutation;
+
+  /// Named [CachePolicy] presets, keyed by policy name.
   final Map<String, CachePolicy> policies;
+
+  /// Enable request deduplication for concurrent identical requests.
   final bool enableDeduplication;
 
   const DioCacheOptions({
@@ -108,6 +198,7 @@ class DioCacheOptions {
     this.enableDeduplication = false,
   });
 
+  /// Converts immutable options to a mutable [CachePolicy].
   CachePolicy toPolicy() => CachePolicy(
     expiration: expiration,
     slidingExpiration: slidingExpiration,
@@ -127,6 +218,18 @@ class _DedupEntry {
 
 // ── Interceptor ────────────────────────────────────────────
 
+/// A Dio interceptor that caches HTTP responses using [MemoryCache].
+
+/// Supports per-request [CacheControl], named policies, tag-based
+/// invalidation, request deduplication, conditional ETag requests,
+/// and stale-while-revalidate background refresh.
+///
+/// ```dart
+/// final dio = Dio();
+/// dio.interceptors.add(DioCacheInterceptor(
+///   options: DioCacheOptions(expiration: Duration(minutes: 5)),
+/// ));
+/// ```
 class DioCacheInterceptor extends Interceptor {
   final MemoryCache _cache;
   final DioCacheOptions _options;
@@ -140,6 +243,7 @@ class DioCacheInterceptor extends Interceptor {
   })  : _cache = cache ?? MemoryCache(),
         _options = options ?? const DioCacheOptions();
 
+  /// The underlying [MemoryCache] instance used for storage.
   MemoryCache get cache => _cache;
 
   // ── Per-request resolution ───────────────────────────────
@@ -434,6 +538,7 @@ class DioCacheInterceptor extends Interceptor {
     _pathKeyIndex.remove(base);
   }
 
+  /// Invalidates all cache entries tagged with [tag].
   void invalidateByTag(String tag) {
     for (final key in _tagIndex[tag] ?? {}) {
       _cache.remove(key);
@@ -441,6 +546,7 @@ class DioCacheInterceptor extends Interceptor {
     _tagIndex.remove(tag);
   }
 
+  /// Invalidates cache entries for paths matching [pattern].
   void invalidateByPathPattern(RegExp pattern) {
     final toRemove = <String>[];
     for (final entry in _pathKeyIndex.entries) {
@@ -506,7 +612,13 @@ class DioCacheInterceptor extends Interceptor {
 
 // ── Extension ──────────────────────────────────────────────
 
+/// Extension on [RequestOptions] for convenient per-request cache control.
+
+/// ```dart
+/// options.cacheControl = CacheControl.forceRefresh;
+/// ```
 extension CacheControlExtension on RequestOptions {
+  /// Gets or sets the [CacheControl] for this request.
   CacheControl get cacheControl {
     final raw = extra['cacheControl'];
     if (raw is CacheControl) return raw;

@@ -1,0 +1,14 @@
+name: example
+description: Example usage of dio_mcache
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  dio: ^5.7.0
+  dio_mcache:
+    path: ..
+
+dev_dependencies:
+  lints: ^4.0.0

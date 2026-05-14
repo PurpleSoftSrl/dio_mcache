@@ -1,11 +1,9 @@
 name: dio_mcache
 description: >-
-  Hyper-configurable HTTP cache interceptor for Dio. Built on
-  mcache_dart. Per-request cache policies, tag-based invalidation,
-  request deduplication, conditional requests, custom serialization,
-  stale-while-revalidate, and full control over every caching
-  behavior at global and per-request level.
-version: 0.1.3
+  HTTP cache interceptor for Dio built on mcache_dart. Per-request
+  cache policies, tag invalidation, deduplication, conditional
+  requests, and stale-while-revalidate.
+version: 0.1.4
 repository: https://github.com/PurpleSoftSrl/dio_mcache
 topics:
   - dio
@@ -19,7 +17,7 @@ environment:
 
 dependencies:
   dio: ^5.7.0
-  mcache_dart: ^0.1.8
+  mcache_dart: ^0.1.9
 
 dev_dependencies:
   lints: ^4.0.0
