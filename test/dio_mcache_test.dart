@@ -461,5 +461,26 @@ void main() {
         expect(r.data['path'], first);
       }
     });
+
+    test('cache hit resolves the dedup entry — a re-open within TTL must not hang', () async {
+      // Regression: a cache hit resolves via handler.resolve and NEVER reaches
+      // onResponse, so the dedup entry registered in _dedupRequest leaked
+      // (orphaned, uncompleted) and the NEXT identical request awaited that
+      // completer forever — an infinite spinner on a screen re-open within the TTL.
+      final cachingInterceptor = DioCacheInterceptor(
+        options: const DioCacheOptions(enableDeduplication: true, expiration: Duration(minutes: 5)),
+      );
+      final cachingDio = Dio(BaseOptions(baseUrl: 'http://localhost:${srv.port}'))
+        ..interceptors.add(cachingInterceptor);
+      addTearDown(cachingDio.close);
+
+      // 1) network -> cached. 2) cache hit (this used to orphan the dedup entry).
+      await cachingDio.get('/cached').timeout(const Duration(seconds: 3));
+      await cachingDio.get('/cached').timeout(const Duration(seconds: 3));
+      // 3) with the leak this awaits the orphaned completer forever -> times out
+      //    and fails; with the fix it resolves from cache immediately.
+      final third = await cachingDio.get('/cached').timeout(const Duration(seconds: 3));
+      expect(third.data['path'], '/cached');
+    });
   });
 }

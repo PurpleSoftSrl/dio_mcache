@@ -380,8 +380,19 @@ class DioCacheInterceptor extends Interceptor {
             ? policy.deserialize!(cached.data)
             : cached.data;
 
+        final cachedResponse = _buildResponse(options, data, cached);
+
+        // CRITICAL (dedup leak fix): a cache hit resolves via handler.resolve and
+        // NEVER reaches onResponse, so the dedup entry registered for this key in
+        // _dedupRequest would leak — orphaned with an uncompleted completer — and
+        // the NEXT identical request (a re-open within the TTL) would await that
+        // completer forever (an infinite spinner). Complete it here with the cached
+        // response (this also serves any concurrent deduped waiter from cache) so
+        // the entry is removed and no future request hangs on it.
+        _resolveDedup(key, cachedResponse);
+
         if (cacheControl == CacheControl.onlyCache) {
-          handler.resolve(_buildResponse(options, data, cached));
+          handler.resolve(cachedResponse);
           return;
         }
 
@@ -390,14 +401,14 @@ class DioCacheInterceptor extends Interceptor {
         if (staleDuration != null) {
           final age = DateTime.now().difference(cached.cachedAt);
           if (age < staleDuration) {
-            handler.resolve(_buildResponse(options, data, cached));
+            handler.resolve(cachedResponse);
             // Re-fetch in background (stale-while-revalidate)
             _revalidateInBackground(options, key, policy);
             return;
           }
         }
 
-        handler.resolve(_buildResponse(options, data, cached));
+        handler.resolve(cachedResponse);
         return;
       }
     }

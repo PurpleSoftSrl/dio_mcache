@@ -1,3 +1,13 @@
+## 0.1.5
+
+- Fix: a cache HIT no longer leaks its deduplication entry. A cache hit resolves
+  via `handler.resolve` and never reaches `onResponse` (where the dedup entry is
+  cleared), so with `enableDeduplication: true` the entry registered in
+  `onRequest` was orphaned with an uncompleted completer — the NEXT identical
+  request awaited it forever (an infinite spinner on a screen re-opened within
+  the TTL). The cache-hit path now resolves the dedup entry with the cached
+  response. Regression test added.
+
 ## 0.1.4
 
 - Add dartdoc documentation to all public API (20%+ coverage)
