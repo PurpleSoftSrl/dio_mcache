@@ -3,7 +3,7 @@ description: >-
   HTTP cache interceptor for Dio built on mcache_dart. Per-request
   cache policies, tag invalidation, deduplication, conditional
   requests, and stale-while-revalidate.
-version: 0.1.5
+version: 0.1.6
 repository: https://github.com/PurpleSoftSrl/dio_mcache
 topics:
   - dio

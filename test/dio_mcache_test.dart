@@ -482,5 +482,37 @@ void main() {
       final third = await cachingDio.get('/cached').timeout(const Duration(seconds: 3));
       expect(third.data['path'], '/cached');
     });
+
+    test('a STALE in-flight dedup entry is not awaited — a fresh request is issued (anti-hang)', () async {
+      // Regression: an in-flight request that gets stuck (app suspended
+      // mid-flight, or a request that never fires a response/error callback)
+      // leaves its dedup entry with a never-completing completer. A later
+      // identical request must NOT await it forever (an infinite spinner on
+      // re-navigation) — past dedupMaxAge it issues a FRESH request instead.
+      var requestCount = 0;
+      final countingSrv = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      countingSrv.listen((req) async {
+        requestCount++;
+        await Future.delayed(const Duration(milliseconds: 400)); // slower than dedupMaxAge
+        req.response.headers.set('content-type', 'application/json');
+        req.response.write(jsonEncode({'n': requestCount}));
+        await req.response.close();
+      });
+      addTearDown(() => countingSrv.close(force: true));
+
+      final interceptor = DioCacheInterceptor(
+        options: const DioCacheOptions(enableDeduplication: true, dedupMaxAge: Duration(milliseconds: 100)),
+      );
+      final d = Dio(BaseOptions(baseUrl: 'http://localhost:${countingSrv.port}'))..interceptors.add(interceptor);
+      addTearDown(d.close);
+
+      // A fires (in-flight, 400ms). After 200ms (> 100ms dedupMaxAge) B fires for
+      // the SAME path: B must not coalesce onto A's now-stale entry.
+      final aFut = d.get('/x');
+      await Future.delayed(const Duration(milliseconds: 200));
+      final bFut = d.get('/x');
+      await Future.wait([aFut, bFut]).timeout(const Duration(seconds: 5));
+      expect(requestCount, 2, reason: 'B must issue a fresh request, not await the stale in-flight entry');
+    });
   });
 }

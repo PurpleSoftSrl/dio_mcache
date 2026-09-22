@@ -1,3 +1,13 @@
+## 0.1.6
+
+- Fix: a request no longer coalesces onto a STALE in-flight dedup entry. If the
+  original request gets stuck (the app is suspended mid-flight, or a request
+  never fires a response/error callback), its dedup entry holds a completer that
+  may never complete — a later identical request would await it forever (an
+  infinite spinner on re-navigation "after a while"). Entries older than the new
+  `DioCacheOptions.dedupMaxAge` (default 30s) are dropped and a FRESH request is
+  issued instead. Regression test added.
+
 ## 0.1.5
 
 - Fix: a cache HIT no longer leaks its deduplication entry. A cache hit resolves

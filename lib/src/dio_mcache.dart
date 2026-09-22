@@ -183,6 +183,13 @@ class DioCacheOptions {
   /// Enable request deduplication for concurrent identical requests.
   final bool enableDeduplication;
 
+  /// Max age of an in-flight dedup entry a new request will coalesce onto. Past
+  /// this age the entry is treated as stuck (e.g. the app was suspended
+  /// mid-request, or a request never fired a response/error callback) and a
+  /// FRESH request is issued instead — a waiter must never block forever on a
+  /// completer that may never complete (an infinite spinner on re-navigation).
+  final Duration dedupMaxAge;
+
   const DioCacheOptions({
     this.expiration,
     this.slidingExpiration,
@@ -196,6 +203,7 @@ class DioCacheOptions {
     this.autoInvalidateOnMutation = true,
     this.policies = const {},
     this.enableDeduplication = false,
+    this.dedupMaxAge = const Duration(seconds: 30),
   });
 
   /// Converts immutable options to a mutable [CachePolicy].
@@ -316,8 +324,16 @@ class DioCacheInterceptor extends Interceptor {
     final perReqDedup = options.extra['cacheDedup'];
     if (perReqDedup is bool && !perReqDedup) return null;
 
-    if (_dedup.containsKey(key)) {
-      return _dedup[key]!.completer.future;
+    final existing = _dedup[key];
+    if (existing != null) {
+      // Only coalesce onto a FRESH in-flight entry. A stale entry means the
+      // original request is stuck (app suspended mid-flight, or it never fired a
+      // response/error callback), so awaiting its completer would hang forever —
+      // drop it and issue a fresh request instead.
+      if (DateTime.now().difference(existing.createdAt) < _options.dedupMaxAge) {
+        return existing.completer.future;
+      }
+      _dedup.remove(key);
     }
     _dedup[key] = _DedupEntry();
     return null;
